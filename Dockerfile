@@ -66,7 +66,12 @@ RUN pecl install xdebug \
 	&& docker-php-ext-enable xdebug
 
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
-# RUN sed -i 's|;sendmail_path =|sendmail_path = /usr/bin/mhsendmail --smtp-addr mailhog:1025|g' $PHP_INI_DIR/php.ini
+RUN curl -Lsf 'https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz' | tar -C '/usr/local' -xvzf -
+ENV PATH /usr/local/go/bin:$PATH
+RUN go get github.com/mailhog/mhsendmail
+RUN cp /root/go/bin/mhsendmail /usr/bin/mhsendmail
+RUN sed -i 's|;sendmail_path =|sendmail_path = /usr/bin/mhsendmail --smtp-addr mailhog:1025|g' $PHP_INI_DIR/php.ini
+
 COPY configs/xxxx-custom.ini $PHP_INI_DIR/conf.d/
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
